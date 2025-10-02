@@ -21,7 +21,7 @@ namespace E_Commerce_Shop_Api.Controllers
             _logger = logger;
         }
 
-        //[Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin},{RoleTypes.Administrator}")]
+        [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin}")]
         [HttpGet("users")]
         [Authorize]
         public async Task<IActionResult> GetAllUsers()
@@ -35,7 +35,7 @@ namespace E_Commerce_Shop_Api.Controllers
 
 
         [HttpGet("{id}")]
-        //[Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Administrator},{RoleTypes.Admin}")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Admin}")]
         public async Task<IActionResult> GetUserById(string id)
         {
             var result = await _userService.GetUserByIdAsync((id));
@@ -43,7 +43,7 @@ namespace E_Commerce_Shop_Api.Controllers
         }
 
         [HttpPut("{id}")]
-        //[Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Administrator},{RoleTypes.Admin}")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Admin}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto updateUserDto)
         {
             var result = await _userService.UpdateUserAsync(id, updateUserDto);
@@ -51,7 +51,7 @@ namespace E_Commerce_Shop_Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Administrator},{RoleTypes.Admin}")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Admin}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var result = await _userService.DeleteUserAsync(id);
@@ -59,7 +59,8 @@ namespace E_Commerce_Shop_Api.Controllers
         }
 
         [HttpPost("changepassword")]
-        //[Authorize(Roles = $"{RoleTypes.User},{RoleTypes.Administrator},{RoleTypes.SuperAdmin}")]
+        [Authorize]
+        [Authorize(Roles = $"{RoleTypes.User},{RoleTypes.SuperAdmin},{RoleTypes.Admin},{RoleTypes.Seller}")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
