@@ -23,7 +23,6 @@ namespace E_Commerce_Shop_Api.Controllers
 
         [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin}")]
         [HttpGet("users")]
-        [Authorize]
         public async Task<IActionResult> GetAllUsers()
         {
             var response = await _userService.GetAllUsersAsync(User);
@@ -59,7 +58,6 @@ namespace E_Commerce_Shop_Api.Controllers
         }
 
         [HttpPost("changepassword")]
-        [Authorize]
         [Authorize(Roles = $"{RoleTypes.User},{RoleTypes.SuperAdmin},{RoleTypes.Admin},{RoleTypes.Seller}")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
@@ -69,6 +67,14 @@ namespace E_Commerce_Shop_Api.Controllers
             var result = await _userService.ChangeUserPassword(changePasswordDto);
             return Ok(result);
         }
+
+        [HttpPut("ReactivateUser/{id}")]
+        [Authorize(Roles = $"{RoleTypes.SuperAdmin}")]
+        public async Task<IActionResult> ReactivateUserAsync(string id)
+        {
+            return Ok(await _userService.ReactivateUserAsync(id));
+        }
+
 
     }
 }

@@ -1,6 +1,7 @@
 
 using E_Commerce_Shop_Api.Data;
 using E_Commerce_Shop_Api.Data.Models;
+using E_Commerce_Shop_Api.Dtos.Seed;
 using E_Commerce_Shop_Api.Dtos.System;
 using E_Commerce_Shop_Api.Services.Implementation;
 using E_Commerce_Shop_Api.Services.Interface;
@@ -106,6 +107,9 @@ namespace E_Commerce_Shop_Api
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
+
+            //seed data
+            SeedData.InitializeAsync(app.Services).GetAwaiter().GetResult();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

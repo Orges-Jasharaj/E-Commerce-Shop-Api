@@ -7,7 +7,6 @@
         public string LastName { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string Email { get; set; }
-        public int DepartamentId { get; set; }
         public bool isActive { get; set; }
     }
 }

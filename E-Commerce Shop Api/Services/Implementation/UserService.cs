@@ -126,7 +126,9 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
         public async Task<ResponseDto<bool>> ReactivateUserAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _appDbContext.Users
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
             {
                 return ResponseDto<bool>.Failure("User not found.");
