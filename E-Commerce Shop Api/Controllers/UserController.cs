@@ -1,0 +1,73 @@
+﻿using E_Commerce_Shop_Api.Data.Models;
+using E_Commerce_Shop_Api.Dtos.Requests;
+using E_Commerce_Shop_Api.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace E_Commerce_Shop_Api.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UserController : ControllerBase
+    {
+        private readonly IUser _userService;
+        private readonly ILogger<UserController> _logger;
+
+        public UserController(IUser userService, ILogger<UserController> logger)
+        {
+            _userService = userService;
+            _logger = logger;
+        }
+
+        //[Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin},{RoleTypes.Administrator}")]
+        [HttpGet("users")]
+        [Authorize]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var response = await _userService.GetAllUsersAsync(User);
+            if (!response.Success)
+                return BadRequest(response);
+
+            return Ok(response);
+        }
+
+
+        [HttpGet("{id}")]
+        //[Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Administrator},{RoleTypes.Admin}")]
+        public async Task<IActionResult> GetUserById(string id)
+        {
+            var result = await _userService.GetUserByIdAsync((id));
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        //[Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Administrator},{RoleTypes.Admin}")]
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto updateUserDto)
+        {
+            var result = await _userService.UpdateUserAsync(id, updateUserDto);
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        //[Authorize(Roles = $"{RoleTypes.SuperAdmin},{RoleTypes.Administrator},{RoleTypes.Admin}")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var result = await _userService.DeleteUserAsync(id);
+            return Ok(result);
+        }
+
+        [HttpPost("changepassword")]
+        //[Authorize(Roles = $"{RoleTypes.User},{RoleTypes.Administrator},{RoleTypes.SuperAdmin}")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            changePasswordDto.UserId = userId;
+
+            var result = await _userService.ChangeUserPassword(changePasswordDto);
+            return Ok(result);
+        }
+
+    }
+}
