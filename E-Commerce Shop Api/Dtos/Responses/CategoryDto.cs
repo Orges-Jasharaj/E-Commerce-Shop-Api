@@ -10,6 +10,7 @@ namespace E_Commerce_Shop_Api.Dtos.Responses
 
         [Required]
         [MaxLength(100)]
+
         public string Name { get; set; }
 
         [MaxLength(300)]
