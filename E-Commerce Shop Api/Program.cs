@@ -41,6 +41,10 @@ namespace E_Commerce_Shop_Api
 
             builder.Services.AddScoped<IUser, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ICategory, CategoryService>();
+
+
+            builder.Services.AddHttpContextAccessor();
 
 
 
