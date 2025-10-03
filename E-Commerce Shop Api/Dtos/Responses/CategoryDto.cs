@@ -14,12 +14,14 @@ namespace E_Commerce_Shop_Api.Dtos.Responses
 
         [MaxLength(300)]
         public string? Description { get; set; }
+
         public string CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
-        public ICollection<Product>? Products { get; set; }
+        public ICollection<ProductDto>? Products { get; set; }
     }
+
 }

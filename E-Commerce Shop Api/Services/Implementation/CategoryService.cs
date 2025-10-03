@@ -78,7 +78,10 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
         public async Task<ResponseDto<List<CategoryDto>>> GetAllCategories()
         {
-            var categories = await _context.Categories.ToListAsync();
+            var categories = await _context.Categories
+                .Include(c => c.Products)
+                .ToListAsync();
+
             var categoryDtos = categories.Select(c => new CategoryDto
             {
                 Id = c.Id,
@@ -88,24 +91,48 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                 CreatedAt = c.CreatedAt,
                 UpdatedBy = c.UpdatedBy,
                 UpdatedAt = c.UpdatedAt,
-                Products = c.Products
+
+                Products = c.Products?.Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Price = p.Price,
+                    Stock = p.Stock,
+                    ImageUrl = p.ImageUrl,
+                    IsActive = p.IsActive,
+                    CategoryId = p.CategoryId,
+                    CreatedBy = p.CreatedBy,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedBy = p.UpdatedBy,
+                    UpdatedAt = p.UpdatedAt
+                }).ToList()
             }).ToList();
-            return ResponseDto<List<CategoryDto>>.SuccessResponse(categoryDtos, "Categories retrieved successfully");
+
+            return ResponseDto<List<CategoryDto>>.SuccessResponse(
+                categoryDtos,
+                "Categories retrieved successfully"
+            );
         }
+
 
         public async Task<ResponseDto<CategoryDto>> GetCategoryById(Guid id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories
+                .Include(c => c.Products) 
+                .FirstOrDefaultAsync(c => c.Id == id);
+
             if (category == null)
             {
                 return ResponseDto<CategoryDto>.Failure(
                     message: "Category not found",
                     errors: new List<ApiError>
                     {
-                        new ApiError { ErrorCode = "CATEGORY_NOT_FOUND", ErrorMessage = $"Category with ID {id} not found." }
+                new ApiError { ErrorCode = "CATEGORY_NOT_FOUND", ErrorMessage = $"Category with ID {id} not found." }
                     }
                 );
             }
+
             var categoryDto = new CategoryDto
             {
                 Id = category.Id,
@@ -115,10 +142,26 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                 CreatedAt = category.CreatedAt,
                 UpdatedBy = category.UpdatedBy,
                 UpdatedAt = category.UpdatedAt,
-                Products = category.Products
+                Products = category.Products?.Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Price = p.Price,
+                    Stock = p.Stock,
+                    ImageUrl = p.ImageUrl,
+                    IsActive = p.IsActive,
+                    CategoryId = p.CategoryId,
+                    CreatedBy = p.CreatedBy,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedBy = p.UpdatedBy,
+                    UpdatedAt = p.UpdatedAt
+                }).ToList() 
             };
+
             return ResponseDto<CategoryDto>.SuccessResponse(categoryDto, "Category retrieved successfully");
         }
+
 
         public async Task<ResponseDto<bool>> UpdateCategory(Guid id, CreateCategoryDto updateCategoryDto)
         {

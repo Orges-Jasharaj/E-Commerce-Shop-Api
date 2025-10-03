@@ -1,16 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using E_Commerce_Shop_Api.Data.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace E_Commerce_Shop_Api.Data.Models
+namespace E_Commerce_Shop_Api.Dtos.Responses
 {
-    public class Product
+    public class ProductDto
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required(ErrorMessage = "Product name is required.")]
         [MaxLength(100, ErrorMessage = "Product name cannot exceed 100 characters.")]
-        public string Name { get; set; } 
+        public string Name { get; set; }
 
         [MaxLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
         public string? Description { get; set; }
@@ -32,17 +33,15 @@ namespace E_Commerce_Shop_Api.Data.Models
         [Required]
         public Guid CategoryId { get; set; }
 
-        [ForeignKey(nameof(CategoryId))]
-        public Category Category { get; set; }
 
         [Required]
         [MaxLength(100)]
-        public string CreatedBy { get; set; } 
+        public string CreatedBy { get; set; }
 
         [MaxLength(100)]
         public string? UpdatedBy { get; set; }
 
-        public DateTime CreatedAt { get; set; } 
+        public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
 }
