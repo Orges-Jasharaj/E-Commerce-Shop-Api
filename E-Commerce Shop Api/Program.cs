@@ -1,4 +1,3 @@
-
 using E_Commerce_Shop_Api.Data;
 using E_Commerce_Shop_Api.Data.Models;
 using E_Commerce_Shop_Api.Dtos.Seed;
@@ -43,6 +42,8 @@ namespace E_Commerce_Shop_Api
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<ICategory, CategoryService>();
             builder.Services.AddScoped<IProduct, ProductService>();
+            builder.Services.AddScoped<CurrentUserService>();
+            builder.Services.AddScoped<ICartItem, CartItemService>();
 
 
             builder.Services.AddHttpContextAccessor();

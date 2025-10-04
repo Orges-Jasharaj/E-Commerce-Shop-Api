@@ -12,13 +12,15 @@ namespace E_Commerce_Shop_Api.Services.Implementation
     {
         private readonly AppDbContext _context;
         private readonly ILogger<CategoryService> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly CurrentUserService _currentUserService;
 
-        public CategoryService(AppDbContext context, ILogger<CategoryService> logger, IHttpContextAccessor httpContextAccessor)
+
+
+        public CategoryService(AppDbContext context, ILogger<CategoryService> logger, CurrentUserService currentUserService)
         {
             _context = context;
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
         }
 
 
@@ -38,15 +40,14 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                 );
             }
 
-            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userName = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+            var userid = _currentUserService.GetCurrentUserId();
 
             var newCategory = new Category
             {
                 Name = createCategoryDto.Name,
                 Description = createCategoryDto.Description,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = userName ?? "System"
+                CreatedBy = userid ?? "System"
             };
 
             _context.Categories.Add(newCategory);
@@ -176,15 +177,14 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                     }
                 );
             }
-            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userName = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+            var userid = _currentUserService.GetCurrentUserId();
 
 
 
             category.Name = updateCategoryDto.Name;
             category.Description = updateCategoryDto.Description;
             category.UpdatedAt = DateTime.UtcNow;
-            category.UpdatedBy = userName ?? "System";
+            category.UpdatedBy = userid ?? "System";
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Category with ID: {CategoryId} updated successfully", id);

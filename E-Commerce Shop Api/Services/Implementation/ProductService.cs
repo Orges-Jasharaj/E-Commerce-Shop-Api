@@ -12,13 +12,13 @@ namespace E_Commerce_Shop_Api.Services.Implementation
     {
         private readonly AppDbContext _context;
         private readonly ILogger<ProductService> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly CurrentUserService _currentUserService;
 
-        public ProductService(AppDbContext context, ILogger<ProductService> logger, IHttpContextAccessor httpContextAccessor)
+        public ProductService(AppDbContext context, ILogger<ProductService> logger, CurrentUserService currentUserService)
         {
             _context = context;
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
         }
 
         public async Task<ResponseDto<bool>> CreateProduct(CreateProductDto createProductDto)
@@ -37,8 +37,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                 );
             }
 
-            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userName = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+            var userId = _currentUserService.GetCurrentUserId();
 
             var newProduct = new Product
             {
@@ -50,7 +49,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                 IsActive = createProductDto.IsActive,
                 CategoryId = createProductDto.CategoryId,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = userName ?? "System"
+                CreatedBy = userId ?? "System"
             };
 
             _context.Products.Add(newProduct);
@@ -150,7 +149,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                     }
                 );
             }
-            var userName = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+            var userId = _currentUserService.GetCurrentUserId();
             product.Name = updateProductDto.Name;
             product.Description = updateProductDto.Description;
             product.Price = updateProductDto.Price;
@@ -159,7 +158,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             product.IsActive = updateProductDto.IsActive;
             product.CategoryId = updateProductDto.CategoryId;
             product.UpdatedAt = DateTime.UtcNow;
-            product.UpdatedBy = userName ?? "System";
+            product.UpdatedBy = userId ?? "System";
             await _context.SaveChangesAsync();
             _logger.LogInformation("Product with ID: {ProductId} updated successfully", id);
             return ResponseDto<bool>.SuccessResponse(true, "Product updated successfully");
