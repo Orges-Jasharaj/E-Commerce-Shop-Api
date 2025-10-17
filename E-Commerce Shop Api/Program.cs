@@ -44,6 +44,7 @@ namespace E_Commerce_Shop_Api
             builder.Services.AddScoped<IProduct, ProductService>();
             builder.Services.AddScoped<CurrentUserService>();
             builder.Services.AddScoped<ICartItem, CartItemService>();
+            builder.Services.AddScoped<IOrder, OrderService>();
 
 
             builder.Services.AddHttpContextAccessor();
