@@ -2,10 +2,10 @@
 using E_Commerce_Shop_Api.Data.Models;
 using E_Commerce_Shop_Api.Dtos.Requests;
 using E_Commerce_Shop_Api.Dtos.Responses;
-using E_Commerce_Shop_Api.Services.Implementation;
+using E_Commerce_Shop_Api.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 
-namespace E_Commerce_Shop_Api.Services.Interface
+namespace E_Commerce_Shop_Api.Services.Implementation
 {
     public class OrderService : IOrder
     {

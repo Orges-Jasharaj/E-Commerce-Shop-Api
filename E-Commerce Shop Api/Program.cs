@@ -2,6 +2,7 @@ using E_Commerce_Shop_Api.Data;
 using E_Commerce_Shop_Api.Data.Models;
 using E_Commerce_Shop_Api.Dtos.Seed;
 using E_Commerce_Shop_Api.Dtos.System;
+using E_Commerce_Shop_Api.Hubs;
 using E_Commerce_Shop_Api.Services.Implementation;
 using E_Commerce_Shop_Api.Services.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -38,6 +39,7 @@ namespace E_Commerce_Shop_Api
             builder.Services.AddScoped<IUserEmailStore<User>>(sp =>
           (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
 
+            
             builder.Services.AddScoped<IUser, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<ICategory, CategoryService>();
@@ -104,6 +106,10 @@ namespace E_Commerce_Shop_Api
                 };
             });
 
+
+            builder.Services.AddSignalR();
+
+
             builder.Services.AddAuthorization();
 
 
@@ -136,6 +142,7 @@ namespace E_Commerce_Shop_Api
 
             app.MapControllers();
 
+            app.MapHub<ChatHub>("/chathub");
             app.Run();
         }
     }
