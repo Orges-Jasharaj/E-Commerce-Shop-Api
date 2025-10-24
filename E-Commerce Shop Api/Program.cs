@@ -142,7 +142,8 @@ namespace E_Commerce_Shop_Api
 
             app.MapControllers();
 
-            app.MapHub<ChatHub>("/chathub");
+            app.MapHub<ChatHub>("hubs/chathub");
+            app.MapHub<NotificationHub>("hubs/notificationhub");
             app.Run();
         }
     }

@@ -2,7 +2,9 @@
 using E_Commerce_Shop_Api.Data.Models;
 using E_Commerce_Shop_Api.Dtos.Requests;
 using E_Commerce_Shop_Api.Dtos.Responses;
+using E_Commerce_Shop_Api.Hubs;
 using E_Commerce_Shop_Api.Services.Interface;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace E_Commerce_Shop_Api.Services.Implementation
@@ -12,12 +14,14 @@ namespace E_Commerce_Shop_Api.Services.Implementation
         private readonly AppDbContext _context;
         private readonly CurrentUserService _currentUserService;
         private readonly ILogger<OrderService> _logger;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public OrderService(AppDbContext context, CurrentUserService currentUserService, ILogger<OrderService> logger)
+        public OrderService(AppDbContext context, CurrentUserService currentUserService, ILogger<OrderService> logger,IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _currentUserService = currentUserService;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         public async Task<ResponseDto<bool>> CreateOrderAsync(CreateOrderDto dto)
@@ -50,6 +54,8 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Order {OrderId} created successfully for user {UserId}.", order.Id, userId);
+
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", $"New order created by user {userId}");
 
             return ResponseDto<bool>.SuccessResponse(true, "Order created successfully.");
         }
