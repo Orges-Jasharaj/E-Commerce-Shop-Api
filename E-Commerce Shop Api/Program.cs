@@ -5,6 +5,8 @@ using E_Commerce_Shop_Api.Dtos.System;
 using E_Commerce_Shop_Api.Hubs;
 using E_Commerce_Shop_Api.Services.Implementation;
 using E_Commerce_Shop_Api.Services.Interface;
+using Hangfire;
+using Hangfire.Dashboard.BasicAuthorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,13 @@ namespace E_Commerce_Shop_Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddHangfire(conf =>
+            {
+                conf.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            builder.Services.AddHangfireServer();
 
 
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -141,6 +150,28 @@ namespace E_Commerce_Shop_Api
 
 
             app.MapControllers();
+
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] 
+                {
+                    new BasicAuthAuthorizationFilter(
+                        new BasicAuthAuthorizationFilterOptions
+                        {
+                            SslRedirect = false,
+                            RequireSsl = false,
+                            LoginCaseSensitive = true,
+                            Users = new[]
+                            {
+                                new BasicAuthAuthorizationUser
+                                {
+                                    Login = "admin",
+                                    PasswordClear = "password"
+                                }
+                            }
+                        })
+                }
+            });
 
             app.MapHub<ChatHub>("hubs/chathub");
             app.MapHub<NotificationHub>("hubs/notificationhub");

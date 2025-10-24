@@ -3,6 +3,7 @@ using E_Commerce_Shop_Api.Data.Models;
 using E_Commerce_Shop_Api.Dtos.Requests;
 using E_Commerce_Shop_Api.Dtos.Responses;
 using E_Commerce_Shop_Api.Services.Interface;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -38,8 +39,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
         }
 
 
-
-
+        [AutomaticRetry(Attempts = 3)]
         public async Task<ResponseDto<bool>> CreateUserAsync(CreateUserDto createUserDto)
         {
             try
@@ -66,7 +66,9 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                 {
                     _logger.LogInformation($"User {user.Email} created successfully");
                     await _userManager.AddToRoleAsync(user, RoleTypes.User);
-                    //BackgroundJob.Enqueue(() => SendEmail(createUserDto.FirstName, createUserDto.Email));
+
+                    BackgroundJob.Enqueue(() => SendEmail(createUserDto.FirstName, createUserDto.Email));
+
                     return ResponseDto<bool>.SuccessResponse(true, "User created successfully");
 
                 }
@@ -87,13 +89,12 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
         }
 
-        //[AutomaticRetry(Attempts = 3)]
-        //public async Task<bool> SendEmail(string FirstName, string email)
-        //{
-        //    await Task.Delay(2000);
-        //    Console.WriteLine($"Email sent to {FirstName} with email {email}");
-        //    return true;
-        //}
+        public async Task<bool> SendEmail(string FirstName, string email)
+        {
+            await Task.Delay(2000);
+            Console.WriteLine($"Email sent to {FirstName} with email {email}");
+            return true;
+        }
 
 
         public async Task<ResponseDto<bool>> DeleteUserAsync(string userId)

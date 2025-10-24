@@ -4,6 +4,7 @@ using E_Commerce_Shop_Api.Dtos.Requests;
 using E_Commerce_Shop_Api.Dtos.Responses;
 using E_Commerce_Shop_Api.Hubs;
 using E_Commerce_Shop_Api.Services.Interface;
+using Hangfire;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +25,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             _hubContext = hubContext;
         }
 
+        [AutomaticRetry(Attempts = 3)]
         public async Task<ResponseDto<bool>> CreateOrderAsync(CreateOrderDto dto)
         {
             var userId = _currentUserService.GetCurrentUserId();
@@ -46,7 +48,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                     ProductId = ci.ProductId,
                     Quantity = ci.Quantity,
                     UnitPrice = ci.Product.Price
-                }).ToList()
+                }).ToList() 
             };
 
             await _context.Orders.AddAsync(order);
@@ -60,6 +62,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             return ResponseDto<bool>.SuccessResponse(true, "Order created successfully.");
         }
 
+        [AutomaticRetry(Attempts = 3)]
         public async Task<ResponseDto<bool>> UpdateOrderAsync(Guid id, UpdateOrderDto dto)
         {
             var order = await _context.Orders.FindAsync(id);

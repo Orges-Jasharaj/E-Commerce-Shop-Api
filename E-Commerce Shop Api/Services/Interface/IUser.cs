@@ -6,6 +6,7 @@ namespace E_Commerce_Shop_Api.Services.Interface
 {
     public interface IUser
     {
+
         Task<ResponseDto<bool>> CreateUserAsync(CreateUserDto createUserDto);
         Task<ResponseDto<bool>> CreateUserWithRoleAsync(CreateUserDto createUserDto, string role);
         Task<ResponseDto<LoginResponseDto>> LoginAsync(LoginDto loginDto);

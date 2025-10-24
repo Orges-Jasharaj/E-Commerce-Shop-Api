@@ -31,9 +31,6 @@ namespace E_Commerce_Shop_Api.Hubs
             var connectionId = _connections.FirstOrDefault(x => x.Value == userId).Key;
             await Clients.Client(connectionId).ReceiveMessage(message);
         }
-
-
-
     }
 
 
