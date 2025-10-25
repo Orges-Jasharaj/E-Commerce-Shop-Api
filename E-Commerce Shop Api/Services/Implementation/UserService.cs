@@ -99,12 +99,12 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
         }
 
-        public async Task<bool> SendEmail(string FirstName, string email)
-        {
-            await Task.Delay(2000);
-            Console.WriteLine($"Email sent to {FirstName} with email {email}");
-            return true;
-        }
+        //public async Task<bool> SendEmail(string FirstName, string email)
+        //{
+        //    await Task.Delay(2000);
+        //    Console.WriteLine($"Email sent to {FirstName} with email {email}");
+        //    return true;
+        //}
 
 
         public async Task<ResponseDto<bool>> DeleteUserAsync(string userId)
@@ -246,7 +246,11 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                     RefreshToken = refreshToken.RefreshToken,
                     RefreshTokenExpiryTime = refreshToken.RefreshTokenExipirityDate
                 };
+
+                BackgroundJob.Enqueue(() =>
+                _emailSender.SendEmail(userexitist.Email, "Login Notification", $"Hello {userexitist.FirstName}, you have successfully logged in at {DateTime.UtcNow}."));
                 return ResponseDto<LoginResponseDto>.SuccessResponse(loginResponse, "Login successful");
+
             }
 
             return ResponseDto<LoginResponseDto>.Failure("Login failed, please check your credentials");
@@ -269,6 +273,8 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             if (result.Succeeded)
             {
                 _logger.LogInformation($"User {user.Email} updated successfully");
+                BackgroundJob.Enqueue(() =>
+                _emailSender.SendEmail(user.Email, "Profile Update Notification", $"Hello {user.FirstName}, your profile was updated successfully at {DateTime.UtcNow}."));
                 return ResponseDto<bool>.SuccessResponse(true, "User updated successfully.");
             }
 
@@ -294,6 +300,8 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             if (result.Succeeded)
             {
                 _logger.LogInformation($"User {user.Email} changed password successfully");
+                BackgroundJob.Enqueue(() =>
+                _emailSender.SendEmail(user.Email, "Password Change Notification", $"Hello {user.FirstName}, your password was changed successfully at {DateTime.UtcNow}."));
                 return ResponseDto<bool>.SuccessResponse(true, "Password changed successfully");
             }
             var errors = result.Errors.Select(e => new ApiError
@@ -389,6 +397,8 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                     await _userManager.AddToRoleAsync(user, role);
                     //BackgroundJob.Enqueue(() => SendEmail(createUserDto.FirstName, createUserDto.Email));
 
+                    BackgroundJob.Enqueue(() =>
+                    _emailSender.SendEmail(user.Email, "Welcome to E-Commerce Shop", $"Hello {createUserDto.FirstName}, welcome to our e-commerce platform as a {role}!"));
                     return ResponseDto<bool>.SuccessResponse(true, $"User created successfully as {role}");
                 }
 

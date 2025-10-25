@@ -16,13 +16,15 @@ namespace E_Commerce_Shop_Api.Services.Implementation
         private readonly CurrentUserService _currentUserService;
         private readonly ILogger<OrderService> _logger;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IEmailSender _emailSender;
 
-        public OrderService(AppDbContext context, CurrentUserService currentUserService, ILogger<OrderService> logger,IHubContext<NotificationHub> hubContext)
+        public OrderService(AppDbContext context, CurrentUserService currentUserService, ILogger<OrderService> logger,IHubContext<NotificationHub> hubContext, IEmailSender emailSender)
         {
             _context = context;
             _currentUserService = currentUserService;
             _logger = logger;
             _hubContext = hubContext;
+            _emailSender = emailSender;
         }
 
         [AutomaticRetry(Attempts = 3)]
@@ -59,6 +61,9 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
             await _hubContext.Clients.All.SendAsync("ReceiveNotification", $"New order created by user {userId}");
 
+            BackgroundJob.Enqueue(() =>
+                    _emailSender.SendEmail(userId," make the order with this id " , order.Id.ToString()));
+
             return ResponseDto<bool>.SuccessResponse(true, "Order created successfully.");
         }
 
@@ -78,6 +83,9 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
             _logger.LogInformation("Order {OrderId} status updated to {Status}.", id, dto.Status);
 
+            BackgroundJob.Enqueue(() =>
+                    _emailSender.SendEmail(order.UserId, "Your order status has been updated", $"Your order with ID {order.Id} is now {order.Status}."));
+
             return ResponseDto<bool>.SuccessResponse(true, "Order updated successfully.");
         }
 
@@ -92,6 +100,9 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Order {OrderId} deleted successfully.", id);
+
+            BackgroundJob.Enqueue(() =>
+                    _emailSender.SendEmail(order.UserId, "Your order has been deleted", $"Your order with ID {order.Id} has been deleted."));
 
             return ResponseDto<bool>.SuccessResponse(true, "Order deleted successfully.");
         }
