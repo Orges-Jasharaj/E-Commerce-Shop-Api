@@ -56,6 +56,7 @@ namespace E_Commerce_Shop_Api
             builder.Services.AddScoped<CurrentUserService>();
             builder.Services.AddScoped<ICartItem, CartItemService>();
             builder.Services.AddScoped<IOrder, OrderService>();
+            builder.Services.AddScoped<IEmailSender, EmailSenderService>();
 
 
             builder.Services.AddHttpContextAccessor();
@@ -90,7 +91,10 @@ namespace E_Commerce_Shop_Api
              });
             });
 
+            builder.Services.Configure<MailerSendSettings>(builder.Configuration.GetSection(MailerSendSettings.SectionName));
+
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+
             var jwtSettings = new JwtSettings();
             builder.Configuration.GetSection(JwtSettings.SectionName).Bind(jwtSettings);
 

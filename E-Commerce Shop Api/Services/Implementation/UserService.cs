@@ -19,6 +19,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
         private readonly ITokenService _tokenService;
         private readonly ILogger<UserService> _logger;
         private readonly AppDbContext _appDbContext;
+        private readonly IEmailSender _emailSender; 
 
         public UserService(
             UserManager<User> userManager,
@@ -27,7 +28,8 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             SignInManager<User> signInManager,
             ITokenService tokenService,
             ILogger<UserService> logger,
-            AppDbContext appDbContext)
+            AppDbContext appDbContext,
+            IEmailSender emailSender)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -36,6 +38,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             _tokenService = tokenService;
             _logger = logger;
             _appDbContext = appDbContext;
+            _emailSender = emailSender;
         }
 
 
@@ -67,7 +70,14 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                     _logger.LogInformation($"User {user.Email} created successfully");
                     await _userManager.AddToRoleAsync(user, RoleTypes.User);
 
-                    BackgroundJob.Enqueue(() => SendEmail(createUserDto.FirstName, createUserDto.Email));
+
+                    BackgroundJob.Enqueue(() =>
+                    _emailSender.SendEmail(user.Email, "Welcome to E-Commerce Shop", $"Hello {createUserDto.FirstName}, welcome to our e-commerce platform!"));
+
+                    BackgroundJob.Enqueue(() =>
+                    _emailSender.SendEmailWithTemplateAsync(user.Email, "Welcome to E - Commerce Shop",user.FirstName,user.LastName));
+
+                    //BackgroundJob.Enqueue(() => SendEmail(createUserDto.FirstName, createUserDto.Email));
 
                     return ResponseDto<bool>.SuccessResponse(true, "User created successfully");
 
