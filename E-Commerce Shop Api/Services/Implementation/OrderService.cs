@@ -40,21 +40,48 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             if (!cartItems.Any())
                 return ResponseDto<bool>.Failure("No valid cart items found.");
 
+            foreach (var item in cartItems)
+            {
+                if (item.Product.Stock < item.Quantity)
+                {
+                    return ResponseDto<bool>.Failure(
+                        message: $"Not enough stock for product '{item.Product.Name}'. Available: {item.Product.Stock}, Requested: {item.Quantity}",
+                        errors: new List<ApiError>
+                        {
+                    new ApiError
+                    {
+                        ErrorCode = "INSUFFICIENT_STOCK",
+                        ErrorMessage = $"Product '{item.Product.Name}' has only {item.Product.Stock} in stock."
+                    }
+                        }
+                    );
+                }
+            }
+
+            foreach (var item in cartItems)
+            {
+                item.Product.Stock -= item.Quantity;
+                _context.Products.Update(item.Product);
+            }
+
             var order = new Order
             {
                 UserId = userId,
                 CreatedBy = userId,
+                CreatedAt = DateTime.UtcNow,
                 TotalAmount = cartItems.Sum(ci => ci.Product.Price * ci.Quantity),
                 OrderItems = cartItems.Select(ci => new OrderItem
                 {
                     ProductId = ci.ProductId,
                     Quantity = ci.Quantity,
                     UnitPrice = ci.Product.Price
-                }).ToList() 
+                }).ToList()
             };
 
             await _context.Orders.AddAsync(order);
-            _context.CartItems.RemoveRange(cartItems); 
+
+            _context.CartItems.RemoveRange(cartItems);
+
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Order {OrderId} created successfully for user {UserId}.", order.Id, userId);
@@ -62,10 +89,11 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             await _hubContext.Clients.All.SendAsync("ReceiveNotification", $"New order created by user {userId}");
 
             BackgroundJob.Enqueue(() =>
-                    _emailSender.SendEmail(userId," make the order with this id " , order.Id.ToString()));
+                _emailSender.SendEmail(userId, "Order Confirmation", $"You successfully placed order with ID {order.Id}"));
 
-            return ResponseDto<bool>.SuccessResponse(true, "Order created successfully.");
+            return ResponseDto<bool>.SuccessResponse(true, "Order created successfully and stock updated.");
         }
+
 
         [AutomaticRetry(Attempts = 3)]
         public async Task<ResponseDto<bool>> UpdateOrderAsync(Guid id, UpdateOrderDto dto)
