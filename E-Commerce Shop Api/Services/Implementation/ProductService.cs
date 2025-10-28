@@ -49,7 +49,7 @@ namespace E_Commerce_Shop_Api.Services.Implementation
                 IsActive = createProductDto.IsActive,
                 CategoryId = createProductDto.CategoryId,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = userId ?? "System"
+                CreatedBy = userId ,
             };
 
             _context.Products.Add(newProduct);
@@ -60,23 +60,30 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
         public async Task<ResponseDto<bool>> DeleteProduct(Guid id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var userId = _currentUserService.GetCurrentUserId();
+
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.Id == id && p.CreatedBy == userId);
+
             if (product == null)
             {
                 return ResponseDto<bool>.Failure(
-                    message: "Product not found",
+                    message: "Product not found or you don't have permission to delete it",
                     errors: new List<ApiError>
                     {
-                        new ApiError { ErrorCode = "PRODUCT_NOT_FOUND", ErrorMessage = $"Product with ID {id} not found." }
+                new ApiError { ErrorCode = "PRODUCT_NOT_FOUND_OR_UNAUTHORIZED", ErrorMessage = $"Product with ID {id} not found or not owned by user." }
                     }
                 );
             }
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Product with ID: {ProductId} deleted successfully", id);
+
+            _logger.LogInformation("User {UserId} deleted their product with ID: {ProductId}", userId, id);
+
             return ResponseDto<bool>.SuccessResponse(true, "Product deleted successfully");
         }
+
 
         public async Task<ResponseDto<List<ProductDto>>> GetAllProducts()
         {
@@ -138,18 +145,26 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
         public async Task<ResponseDto<bool>> UpdateProduct(Guid id, CreateProductDto updateProductDto)
         {
-            var product = await _context.Products.FindAsync(id);
+            var userId = _currentUserService.GetCurrentUserId();
+
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.Id == id && p.CreatedBy == userId);
+
             if (product == null)
             {
                 return ResponseDto<bool>.Failure(
-                    message: "Product not found",
+                    message: "Product not found or you don't have permission to update it",
                     errors: new List<ApiError>
                     {
-                        new ApiError { ErrorCode = "PRODUCT_NOT_FOUND", ErrorMessage = $"Product with ID {id} not found." }
+                new ApiError
+                {
+                    ErrorCode = "PRODUCT_NOT_FOUND_OR_UNAUTHORIZED",
+                    ErrorMessage = $"Product with ID {id} not found or not owned by current user."
+                }
                     }
                 );
             }
-            var userId = _currentUserService.GetCurrentUserId();
+
             product.Name = updateProductDto.Name;
             product.Description = updateProductDto.Description;
             product.Price = updateProductDto.Price;
@@ -158,10 +173,14 @@ namespace E_Commerce_Shop_Api.Services.Implementation
             product.IsActive = updateProductDto.IsActive;
             product.CategoryId = updateProductDto.CategoryId;
             product.UpdatedAt = DateTime.UtcNow;
-            product.UpdatedBy = userId ?? "System";
+            product.UpdatedBy = userId;
+
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Product with ID: {ProductId} updated successfully", id);
+
+            _logger.LogInformation("User {UserId} updated product with ID: {ProductId}", userId, id);
+
             return ResponseDto<bool>.SuccessResponse(true, "Product updated successfully");
         }
+
     }
 }

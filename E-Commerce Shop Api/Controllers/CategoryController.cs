@@ -40,21 +40,21 @@ namespace E_Commerce_Shop_Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin},{RoleTypes.Seller}")]
+        [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin}")]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto createCategoryDto)
         {
             return Ok(await _category.CreateCategory(createCategoryDto));
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin},{RoleTypes.Seller}")]
+        [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin}")]
         public async Task<IActionResult> DeleteCategory(Guid id)
         {
             return Ok(await _category.DeleteCategory(id));
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin},{RoleTypes.Seller}")]
+        [Authorize(Roles = $"{RoleTypes.Admin},{RoleTypes.SuperAdmin}")]
         public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] CreateCategoryDto updateCategoryDto)
         {
             return Ok(await _category.UpdateCategory(id, updateCategoryDto));
