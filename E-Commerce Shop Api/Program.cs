@@ -128,6 +128,18 @@ namespace E_Commerce_Shop_Api
             builder.Services.AddAuthorization();
 
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder =>
+                {
+                    builder.AllowAnyMethod()
+                           .AllowAnyHeader()
+                           .AllowCredentials()
+                           .SetIsOriginAllowed(origin => true);
+                });
+            });
+
+
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -180,6 +192,9 @@ namespace E_Commerce_Shop_Api
                         })
                 }
             });
+
+            app.UseCors("CorsPolicy");
+
 
             app.MapHub<ChatHub>("hubs/chathub");
             app.MapHub<NotificationHub>("hubs/notificationhub");
