@@ -22,6 +22,7 @@ namespace E_Commerce_Shop_Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.AddServiceDefaults();
 
             builder.Services.AddHangfire(conf =>
             {
@@ -133,6 +134,8 @@ namespace E_Commerce_Shop_Api
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
+
+            app.MapDefaultEndpoints();
 
             //seed data
             SeedData.InitializeAsync(app.Services).GetAwaiter().GetResult();
