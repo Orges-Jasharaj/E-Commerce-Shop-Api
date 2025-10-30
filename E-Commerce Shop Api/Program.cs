@@ -10,6 +10,7 @@ using Hangfire.Dashboard.BasicAuthorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Security.Claims;
