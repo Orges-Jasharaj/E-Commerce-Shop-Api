@@ -238,13 +238,15 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
                 await _userManager.UpdateAsync(userexitist);
 
+                var rolesList = roles.ToList();
                 var loginResponse = new LoginResponseDto
                 {
                     DisplayName = $"{userexitist.FirstName} {userexitist.LastName}",
                     Email = userexitist.Email,
                     AccessToken = token,
                     RefreshToken = refreshToken.RefreshToken,
-                    RefreshTokenExpiryTime = refreshToken.RefreshTokenExipirityDate
+                    RefreshTokenExpiryTime = refreshToken.RefreshTokenExipirityDate,
+                    Roles = rolesList
                 };
 
                 BackgroundJob.Enqueue(() =>
@@ -346,13 +348,15 @@ namespace E_Commerce_Shop_Api.Services.Implementation
 
             await _userManager.UpdateAsync(user);
 
+            var rolesList = roles.ToList();
             var loginResponse = new LoginResponseDto
             {
                 DisplayName = $"{user.FirstName} {user.LastName}",
                 Email = user.Email,
                 AccessToken = token,
                 RefreshToken = refreshToken.RefreshToken,
-                RefreshTokenExpiryTime = refreshToken.RefreshTokenExipirityDate
+                RefreshTokenExpiryTime = refreshToken.RefreshTokenExipirityDate,
+                Roles = rolesList
             };
             return ResponseDto<LoginResponseDto>.SuccessResponse(loginResponse, "Login successful");
 

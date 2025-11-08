@@ -130,12 +130,20 @@ namespace E_Commerce_Shop_Api
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("CorsPolicy", builder =>
+                options.AddPolicy("CorsPolicy", policy =>
                 {
-                    builder.AllowAnyMethod()
-                           .AllowAnyHeader()
-                           .AllowCredentials()
-                           .SetIsOriginAllowed(origin => true);
+                    policy
+                        .SetIsOriginAllowed(origin =>
+                        {
+                            if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                            {
+                                return string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase);
+                            }
+                            return false;
+                        })
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
                 });
             });
 
@@ -166,8 +174,11 @@ namespace E_Commerce_Shop_Api
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            // CORS must be placed before auth and endpoints
+            app.UseCors("CorsPolicy");
 
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
 
@@ -192,9 +203,6 @@ namespace E_Commerce_Shop_Api
                         })
                 }
             });
-
-            app.UseCors("CorsPolicy");
-
 
             app.MapHub<ChatHub>("hubs/chathub");
             app.MapHub<NotificationHub>("hubs/notificationhub");

@@ -1,0 +1,77 @@
+@page "/products"
+@inject EcommerceUI.Services.ProductService ProductService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<h3>Products</h3>
+
+<button class="btn btn-primary" @onclick="LoadProducts">Get All Products</button>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (products != null && products.Count > 0)
+{
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in products)
+            {
+                <tr>
+                    <td>@p.Name</td>
+                    <td>@p.Description</td>
+                    <td>@p.Price</td>
+                    <td>@p.Stock</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool isLoading;
+    private string? errorMessage;
+    private List<E_Commerce_Shop_Api.Dtos.Responses.ProductDto> products = new();
+
+    private async Task LoadProducts()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            // Prefero të përdor backend-in direkt (jo cache nga login)
+            var response = await ProductService.GetAllProductsAsync();
+            if (response.Success && response.Data != null)
+            {
+                products = response.Data;
+                await LocalStorage.SetItemAsync("products", products);
+            }
+            else
+            {
+                errorMessage = response.Message ?? "Failed to load products";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
+
+

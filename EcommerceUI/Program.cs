@@ -22,6 +22,7 @@ namespace EcommerceUI
             builder.Services.AddScoped<CustomAuthStateProvider>();
             builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
             builder.Services.AddScoped<AuthServices>();
+            builder.Services.AddScoped<ProductService>();
             builder.Services.AddAuthorizationCore();
 
 
@@ -31,6 +32,11 @@ namespace EcommerceUI
             }).AddHttpMessageHandler<AuthTokenHandler>();
 
             builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthAPI"));
+
+            builder.Services.AddHttpClient("ProductAPI", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7192/api/Product/");
+            }).AddHttpMessageHandler<AuthTokenHandler>();
 
 
             await builder.Build().RunAsync();
